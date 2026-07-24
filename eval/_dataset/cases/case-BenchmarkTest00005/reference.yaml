@@ -1,0 +1,3 @@
+real_vulnerability: true
+cwe: 89
+category: sqli

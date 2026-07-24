@@ -1,0 +1,5 @@
+{
+  "name": "my-skill-tests",
+  "version": "0.1.0",
+  "skills": ["skills/sqli-detector"]
+}

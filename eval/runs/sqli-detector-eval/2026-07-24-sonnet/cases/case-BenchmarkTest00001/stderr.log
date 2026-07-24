@@ -1,0 +1,1 @@
+Ignoring 1 permissions.additionalDirectories entry from .claude/settings.json: this workspace has not been trusted. Run Claude Code interactively here once and accept the trust dialog, or set projects["/private/var/folders/31/_62mjbw9025_w2bhzx_k744r0000gn/T/agent-eval/2026-07-24-sonnet/cases/case-BenchmarkTest00001"].hasTrustDialogAccepted: true in /Users/bchesser/.claude.json.

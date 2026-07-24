@@ -1,0 +1,22 @@
+Scoring 10 cases with 3 judges: ['verdict_format', 'verdict_correct', 'reasoning_quality']
+  [1/10] case-BenchmarkTest00006
+  [2/10] case-BenchmarkTest00007
+  [3/10] case-BenchmarkTest00008
+  [4/10] case-BenchmarkTest00009
+  [5/10] case-BenchmarkTest00010
+  [6/10] case-BenchmarkTest00005
+  [7/10] case-BenchmarkTest00002
+  [8/10] case-BenchmarkTest00004
+  [9/10] case-BenchmarkTest00001
+  [10/10] case-BenchmarkTest00003
+  verdict_format: pass_rate=0.0%
+  verdict_correct: pass_rate=0.0%
+  reasoning_quality: mean=5.00
+  cost_per_turn_usd: $0.0629
+  output_tokens_per_turn: 624.9
+  cache_hit_rate: 62.5%
+  cost_per_mtok_usd: $1.8387
+
+  REGRESSIONS: 2 detected
+    [verdict_format] pass_rate: >= 0.95 -> 0.0
+    [verdict_correct] pass_rate: >= 0.7 -> 0.0

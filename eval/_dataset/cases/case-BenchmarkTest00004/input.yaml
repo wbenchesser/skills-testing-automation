@@ -1,0 +1,33 @@
+prompt: 'Analyze the following code for security vulnerabilities. Decide whether it
+  contains a real, exploitable vulnerability based ONLY on the executable logic (ignore
+  comments). Respond with a fenced block:
+
+  ```verdict
+
+  vulnerable: <true|false>
+
+  cwe: <number or none>
+
+  reasoning: <1-3 sentences grounded in the code''s data/control flow>
+
+  ```'
+code: "package org.owasp.benchmark.testcode;\n\nimport java.io.IOException;\nimport\
+  \ javax.servlet.ServletException;\nimport javax.servlet.annotation.WebServlet;\n\
+  import javax.servlet.http.HttpServlet;\nimport javax.servlet.http.HttpServletRequest;\n\
+  import javax.servlet.http.HttpServletResponse;\nimport java.sql.*;\n\n@WebServlet(value=\"\
+  /sqli-00004\")\npublic class BenchmarkTest00004 extends HttpServlet {\n\n    private\
+  \ static final long serialVersionUID = 1L;\n\n    @Override\n    public void doGet(HttpServletRequest\
+  \ request, HttpServletResponse response)\n            throws ServletException, IOException\
+  \ {\n        doPost(request, response);\n    }\n\n    @Override\n    public void\
+  \ doPost(HttpServletRequest request, HttpServletResponse response)\n           \
+  \ throws ServletException, IOException {\n\n        response.setContentType(\"text/html;charset=UTF-8\"\
+  );\n\n        String param = request.getParameter(\"id\");\n\n        String bar\
+  \ = doSomething(request, param);\n\n        String sql = \"DELETE FROM users WHERE\
+  \ id = \" + bar;\n\n        try {\n            Connection conn = DriverManager.getConnection(\n\
+  \                \"jdbc:mysql:\n            Statement stmt = conn.createStatement();\n\
+  \            int rowsAffected = stmt.executeUpdate(sql);\n\n            response.getWriter().println(\"\
+  Deleted \" + rowsAffected + \" rows\");\n\n            stmt.close();\n         \
+  \   conn.close();\n        } catch (SQLException e) {\n            throw new ServletException(e);\n\
+  \        }\n    }\n\n    private static String doSomething(HttpServletRequest request,\
+  \ String param) {\n        return param;\n    }\n}\n"
+language: java
