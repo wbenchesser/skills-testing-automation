@@ -1,0 +1,7 @@
+Looking at this Java servlet code, I can analyze the SQL construction and data flow:
+
+```verdict
+vulnerable: true
+cwe: 89
+reasoning: The code takes user input from `request.getParameter("username")` and directly concatenates it into a SQL query string using the `+` operator: `"SELECT * FROM users WHERE username = '" + param + "'"`. This concatenated SQL is then executed via `stmt.executeQuery(sql)` without any parameterization, allowing attackers to inject malicious SQL code.
+```

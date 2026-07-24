@@ -1,0 +1,202 @@
+judges:
+  reasoning_quality:
+    mean: 5.0
+    pass_rate: null
+  verdict_correct:
+    mean: 0.0
+    pass_rate: 0.0
+  verdict_format:
+    mean: 0.0
+    pass_rate: 0.0
+per_case:
+  case-BenchmarkTest00001:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent reasoning by specifically identifying
+        the data flow from untrusted input (`request.getParameter("username")`) to
+        SQL query execution, citing the exact vulnerable pattern of string concatenation
+        with the `+` operator, referencing specific variable names (`param`, `sql`),
+        and noting the execution via `stmt.executeQuery(sql)` without parameterization.
+        This demonstrates precise technical understanding of SQL injection vulnerabilities
+        through concrete code analysis.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00002:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent reasoning by identifying the specific
+        data flow from untrusted input (request.getParameter("username")) to the SQL
+        query, explicitly mentions the vulnerable string concatenation pattern ("SELECT
+        * FROM users WHERE username = '" + param + "'"), references actual method
+        names, and correctly identifies that parameterized queries are not used. The
+        analysis demonstrates deep understanding of SQL injection vulnerabilities
+        through concrete code analysis.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00003:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent analysis by clearly tracing the data
+        flow from untrusted input (request.getHeader("username")) through string concatenation
+        to SQL execution (Statement.executeQuery(sql)), citing specific variable names
+        and methods. The reasoning demonstrates deep understanding of SQL injection
+        mechanics by explaining how the vulnerability occurs through direct concatenation
+        versus parameterization, and even provides a concrete attack example.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00004:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent analysis by tracing the complete data
+        flow from untrusted input (request.getParameter("id")) through the doSomething
+        method to SQL execution, specifically citing string concatenation ("DELETE
+        FROM users WHERE id = " + bar) vs proper parameterization, and referencing
+        actual method names like Statement.executeUpdate(). The reasoning demonstrates
+        thorough understanding of SQL injection mechanics with concrete code references.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00005:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent reasoning by clearly tracing the data
+        flow from untrusted input (request.getParameter("search")) through string
+        concatenation ("%" + param + "%") to the vulnerable SQL execution point (Statement.executeQuery()),
+        and specifically identifies the vulnerability mechanism (lack of parameterization)
+        with concrete variable and method names from the code.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00006:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent reasoning by tracing specific data flow
+        from `request.getParameter("username")` to the SQL query, explicitly mentions
+        the use of parameterized queries with `PreparedStatement` and `setString()`
+        method, and correctly identifies that this prevents SQL injection by treating
+        input as data rather than executable code. The analysis demonstrates clear
+        understanding of the vulnerability pattern and cites actual code elements.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00007:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent reasoning by specifically identifying
+        the use of PreparedStatement with parameterized queries (? placeholder) and
+        the proper parameter binding via pstmt.setString(1, param), while explicitly
+        noting the absence of dangerous string concatenation. The analysis demonstrates
+        clear understanding of data flow from user input to SQL execution and references
+        actual method names and vulnerability patterns.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00008:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent analysis by specifically identifying
+        the data flow from untrusted input (request.getHeader("username")) to the
+        SQL query, correctly distinguishing between vulnerable string concatenation
+        and safe parameterized queries using PreparedStatement with setString(), and
+        referencing the actual parameter binding method. The reasoning demonstrates
+        deep understanding of SQL injection prevention mechanisms with concrete code
+        references.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00009:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provides excellent analysis by citing specific data flow
+        from request.getParameter("id") through doSomething() to the parameterized
+        query, correctly identifies the use of PreparedStatement with placeholders
+        (?), and references actual method names like pstmt.setInt(). The reasoning
+        demonstrates clear understanding of why parameterized queries prevent SQL
+        injection compared to string concatenation.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+  case-BenchmarkTest00010:
+    reasoning_quality:
+      judge_type: llm
+      rationale: The agent provided excellent analysis by specifically tracing the
+        data flow from untrusted input (`request.getParameter("search")`) through
+        the variable `param` to its safe binding via `pstmt.setString(1, "%" + param
+        + "%")`, correctly distinguishing between string concatenation at the parameter
+        binding level versus SQL query structure modification. The reasoning demonstrates
+        deep understanding by referencing actual code elements like the PreparedStatement
+        query structure `"SELECT * FROM products WHERE name LIKE ?"` and explaining
+        why the concatenation with `%` characters doesn't create vulnerability since
+        it occurs within the parameterized binding rather than direct SQL construction.
+      value: 5
+    verdict_correct:
+      judge_type: check
+      rationale: Case directory not available
+      value: false
+    verdict_format:
+      judge_type: check
+      rationale: No verdict block found in conversation
+      value: false
+run_id: 2026-07-24-sonnet
+run_metrics:
+  cache_hit_rate: 0.625574
+  cost_per_mtok_usd: 1.8591
+  cost_per_turn_usd: 0.063571
+  output_tokens_per_turn: 665.86

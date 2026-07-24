@@ -1,0 +1,12 @@
+I'll analyze this Java servlet code for SQL injection vulnerabilities.
+
+Looking at the data flow:
+1. User input is extracted from the HTTP header "username" via `request.getHeader("username")`
+2. This untrusted input is directly concatenated into a SQL query: `String sql = "SELECT * FROM users WHERE username = '" + param + "'"`
+3. The query is executed using `Statement.executeQuery(sql)` without any parameterization
+
+```verdict
+vulnerable: true
+cwe: 89
+reasoning: The code directly concatenates untrusted user input from the "username" HTTP header into a SQL query using string concatenation, then executes it with Statement.executeQuery(). An attacker can inject malicious SQL by manipulating the header value, such as setting it to "admin' OR '1'='1" to bypass authentication or extract unauthorized data.
+```

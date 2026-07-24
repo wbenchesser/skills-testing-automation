@@ -1,0 +1,7 @@
+Looking at this Java servlet code, I need to analyze the SQL query construction and data flow.
+
+```verdict
+vulnerable: true
+cwe: 89
+reasoning: The code directly concatenates user input from request.getParameter("username") into a SQL query string using string concatenation ("SELECT * FROM users WHERE username = '" + param + "'"). This allows an attacker to inject malicious SQL by manipulating the username parameter, as no parameterized queries or input sanitization are used.
+```

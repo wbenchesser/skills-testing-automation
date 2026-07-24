@@ -1,0 +1,7 @@
+Looking at this Java servlet code, I need to analyze the data flow from user input to SQL execution.
+
+```verdict
+vulnerable: true
+cwe: 89
+reasoning: User input from request.getParameter("id") flows directly into SQL query construction via string concatenation ("DELETE FROM users WHERE id = " + bar), with no parameterization or sanitization. The doSomething method returns the parameter unchanged, and the concatenated SQL is executed using Statement.executeUpdate(), creating a classic SQL injection vulnerability.
+```

@@ -1,0 +1,13 @@
+Looking at this Java servlet code, I need to analyze the SQL query construction and parameter handling.
+
+```verdict
+vulnerable: false
+cwe: none
+reasoning: The code uses PreparedStatement with a parameterized query containing a ? placeholder, and user input is safely bound using setString(). Although string concatenation occurs with the % characters, this happens at the parameter binding level, not in the SQL structure itself, so the SQL injection attack surface is eliminated.
+```
+
+The code is secure because:
+1. The SQL query structure is fixed: `"SELECT * FROM products WHERE name LIKE ?"`
+2. User input from `request.getParameter("search")` is bound to the parameter using `pstmt.setString(1, "%" + param + "%")`
+3. Even though there's string concatenation with `%` characters, this occurs safely within the parameter binding, not in the SQL query construction
+4. Any malicious input would be treated as literal string data for the LIKE pattern matching, not executed as SQL code

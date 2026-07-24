@@ -1,0 +1,7 @@
+Looking at this Java code, I need to analyze the data flow and SQL query construction:
+
+```verdict
+vulnerable: true
+cwe: 89
+reasoning: The code takes user input from request.getParameter("search") and directly concatenates it into a SQL query using string concatenation ("%" + param + "%"). This untrusted input flows into Statement.executeQuery() without any parameterization or sanitization, allowing attackers to inject malicious SQL code.
+```

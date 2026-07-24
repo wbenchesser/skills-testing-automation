@@ -1,0 +1,7 @@
+Looking at this Java servlet code, I need to analyze the SQL query construction and parameter handling for potential injection vulnerabilities.
+
+```verdict
+vulnerable: false
+cwe: none
+reasoning: The code uses PreparedStatement with parameterized queries (? placeholder) and properly binds user input via pstmt.setString(1, param). There is no string concatenation of untrusted input directly into the SQL query, making this implementation safe from SQL injection.
+```

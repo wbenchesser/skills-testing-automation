@@ -1,0 +1,7 @@
+Looking at this Java servlet code to analyze for SQL injection vulnerabilities.
+
+```verdict
+vulnerable: false
+cwe: none
+reasoning: The code uses a PreparedStatement with a parameterized query (?) and properly binds the user input using setString(1, param). Despite taking untrusted input from request.getHeader("username"), the parameterization prevents SQL injection by separating the SQL structure from the data values.
+```

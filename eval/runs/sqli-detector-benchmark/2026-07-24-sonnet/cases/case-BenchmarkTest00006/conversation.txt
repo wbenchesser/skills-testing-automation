@@ -1,0 +1,11 @@
+Looking at this code, I need to trace the data flow and SQL construction:
+
+1. **User input**: `request.getParameter("username")` gets untrusted input from the HTTP request
+2. **SQL construction**: The query uses `"SELECT * FROM users WHERE username = ?"` with a parameterized placeholder
+3. **Parameter binding**: The code uses `PreparedStatement` and `pstmt.setString(1, param)` to safely bind the user input
+
+```verdict
+vulnerable: false
+cwe: none
+reasoning: The code uses PreparedStatement with parameterized queries and properly binds the user input using setString(), which prevents SQL injection attacks by treating the input as data rather than executable SQL code.
+```

@@ -1,138 +1,117 @@
-name: sqli-detector-eval
-description: Evaluate SQL injection vulnerability detection accuracy on OWASP benchmark
+name: sqli-detector-benchmark
+description: SQL injection vulnerability detection against OWASP Benchmark
 skill: sqli-detector
 
-# Execution — case mode for single-item analysis
+# Execution — case-by-case analysis
 execution:
   mode: case
   arguments: "{prompt}\n\n{code}"
+  timeout: 600
+  parallelism: 3
 
-# Runner — Claude Code harness
+# Runner configuration
 runner:
   type: claude-code
+  settings:
+    traces:
+      conversation: true
+      stdout: true
+      stderr: true
 
-# Models — defaults for eval runs
+# Models for evaluation
 models:
   skill: claude-sonnet-4@20250514
   judge: claude-sonnet-4@20250514
 
-# Permissions for headless execution
+# Permissions — skill is pure LLM analysis, no tools needed
 permissions:
   allow: []
-  deny: ["**/reference.yaml"]  # Belt-and-suspenders: hide answer key from skill
+  deny: ["**/reference.yaml"]  # Prevent skill from reading ground truth
 
-# MLflow logging target
+# MLflow tracking
 mlflow:
-  experiment: skills-testing-automation-eval
+  experiment: sqli-detector-eval
 
-# Dataset — shared OWASP benchmark cases
+# Dataset structure
 dataset:
-  path: _dataset/cases
+  path: /Users/bchesser/Projects/Skills-Testing-Automation/skills-testing-automation/eval/_dataset/cases
   schema: |
-    Each case directory contains:
-    - input.yaml: YAML file with three fields:
-      * 'prompt': Instructions to analyze code for vulnerabilities and return a verdict
-      * 'code': Java servlet code (comments stripped) to analyze for SQL injection
-      * 'language': Programming language identifier (always "java")
-    - reference.yaml: Ground truth labels (judge-only):
-      * 'real_vulnerability': boolean — true if code contains exploitable SQL injection
-      * 'cwe': integer (89 for SQL injection) or null
-      * 'category': string — vulnerability category (e.g., "sqli")
+    Each test case directory contains:
+    - input.yaml: Contains three fields:
+      - prompt (string): Instructions to analyze code and output verdict in fenced block
+      - code (string): Java source code with comments stripped
+      - language (string): Always "java"
+    - reference.yaml: Ground truth labels (judge-only, denied to skill):
+      - real_vulnerability (boolean): True if code has exploitable SQL injection
+      - cwe (number or null): 89 for SQL injection, null otherwise
+      - category (string): Vulnerability category (e.g., "sqli")
 
-# Outputs — stdout-only skill (conversation text, not files)
+# No tool interception needed — pure LLM analysis
+inputs:
+  tools: []
+
+# Output structure
 outputs:
   - path: output
     schema: |
-      This is a stdout-only skill — output is produced via conversation text, not files.
+      STDOUT-ONLY SKILL: No file artifacts produced. Skill outputs verdict
+      via conversation text in a fenced code block:
 
-      The skill returns a fenced code block in the conversation with this structure:
       ```verdict
       vulnerable: <true|false>
-      cwe: <89 if SQL injection found, otherwise none>
-      reasoning: <1-3 sentences explaining the analysis>
+      cwe: <89 or none>
+      reasoning: <1-3 sentences explaining analysis>
       ```
 
-      Judges use {{ conversation }} to access this output (not {{ outputs }}).
+      Judges must use {{ conversation }} template variable to access this output.
 
-# Traces — execution data to capture
-traces:
-  stdout: true
-  stderr: true
-  events: true
-  metrics: true
-
-# Judges — evaluate verdict correctness and reasoning quality
+# Judges — detection accuracy + reasoning quality
 judges:
-  # Check: Validate verdict block format
   - name: verdict_format
-    description: |
-      Validates that the conversation output contains a properly formatted verdict block
-      with required fields (vulnerable, cwe, reasoning).
+    description: Verify verdict block is properly formatted with all required fields
+    type: check
     check: |
       import re
-
-      # Extract conversation text from outputs
       conversation = outputs.get("_conversation", "")
-
-      # Look for verdict block
       verdict_match = re.search(r'```verdict\s*\n(.*?)\n```', conversation, re.DOTALL | re.IGNORECASE)
       if not verdict_match:
           return False, "No verdict block found in conversation"
-
       verdict_text = verdict_match.group(1)
-
-      # Check for required fields
       has_vulnerable = re.search(r'vulnerable:\s*(true|false)', verdict_text, re.IGNORECASE)
       has_cwe = re.search(r'cwe:\s*(\d+|none|null)', verdict_text, re.IGNORECASE)
       has_reasoning = re.search(r'reasoning:\s*(.+)', verdict_text, re.IGNORECASE | re.DOTALL)
-
       if not has_vulnerable:
           return False, "Missing 'vulnerable' field"
       if not has_cwe:
           return False, "Missing 'cwe' field"
       if not has_reasoning:
           return False, "Missing 'reasoning' field"
-
       return True, "Verdict block properly formatted"
 
-  # Check: Classification correctness with confusion matrix
   - name: verdict_correct
-    description: |
-      Skill's vulnerable verdict matches the OWASP label; also emits
-      confusion-matrix cell for precision/recall calculation.
+    description: Compare skill verdict against OWASP benchmark ground truth, compute confusion matrix
+    type: check
     check: |
-      import re
-      import yaml
+      import re, yaml
       from pathlib import Path
-
-      # Load ground truth from reference.yaml
       case_dir = outputs.get("_case_dir", "")
       if not case_dir:
           return False, "Case directory not available"
-
       ref_path = Path(case_dir) / "reference.yaml"
       if not ref_path.exists():
           return False, f"reference.yaml not found at {ref_path}"
-
       with open(ref_path) as f:
           ref = yaml.safe_load(f)
-
-      # Extract predicted verdict from conversation
       conversation = outputs.get("_conversation", "")
       verdict_match = re.search(r'```verdict\s*\n(.*?)\n```', conversation, re.DOTALL | re.IGNORECASE)
       if not verdict_match:
           return False, "No parseable verdict in conversation"
-
       verdict_text = verdict_match.group(1)
       vuln_match = re.search(r'vulnerable:\s*(true|false)', verdict_text, re.IGNORECASE)
       if not vuln_match:
           return False, "No vulnerable field found in verdict"
-
-      # Parse prediction and ground truth
       pred = vuln_match.group(1).lower() == "true"
       gold = bool(ref.get("real_vulnerability", False))
-
-      # Determine confusion matrix cell
       if pred and gold:
           cell = "TP"
       elif pred and not gold:
@@ -141,22 +120,27 @@ judges:
           cell = "FN"
       else:
           cell = "TN"
-
       ok = pred == gold
       cwe = ref.get("cwe", "null")
+      testname = Path(case_dir).name
+      return ok, f"{cell} (pred={pred}, gold={gold}, cwe={cwe}, case={testname})"
 
-      return ok, f"{cell} (pred={pred}, gold={gold}, cwe={cwe})"
-
-  # LLM: Reasoning quality assessment
   - name: reasoning_quality
-    description: |
-      Evaluates whether reasoning is grounded in executable logic (data flow,
-      parameterization patterns) rather than comments or generic principles.
-      Scores 1-5.
+    description: Score reasoning quality (1-5) based on code-grounded analysis vs superficial patterns
+    type: llm
     prompt: |
-      You are evaluating the quality of an SQL injection vulnerability analysis.
+      The agent was asked to judge whether Java code contains a SQL injection vulnerability
+      using ONLY executable logic and data flow analysis, explicitly ignoring code comments.
 
-      GROUND TRUTH (from reference.yaml):
+      Rate the agent's reasoning quality on a scale of 1-5:
+      - 5: Excellent - cites specific data flow from untrusted input to SQL query, mentions
+        string concatenation vs parameterization, references actual variable/method names
+      - 4: Good - identifies key vulnerability patterns with some specificity
+      - 3: Adequate - correct general pattern but lacks concrete code references
+      - 2: Weak - vague reasoning or appears to guess
+      - 1: Poor - relies on comments, makes unfounded claims, or shows no understanding
+
+      GROUND TRUTH (from OWASP benchmark reference.yaml):
       {% if annotations %}
       - Real vulnerability: {{ annotations.real_vulnerability }}
       - CWE: {{ annotations.cwe }}
@@ -168,42 +152,16 @@ judges:
       AGENT OUTPUT (from conversation):
       {{ conversation }}
 
-      Evaluate ONLY the reasoning quality, ignoring whether the verdict was correct:
+      Return ONLY a JSON object with this structure:
+      {
+        "score": <number 1-5>,
+        "rationale": "<1-2 sentences explaining your rating>"
+      }
 
-      SCORING CRITERIA (1-5):
-
-      5 = Excellent reasoning:
-          - Cites concrete code patterns (PreparedStatement vs Statement.executeQuery)
-          - References specific data flow (request.getParameter → SQL query)
-          - Mentions parameterization (? placeholders, setString) or concatenation (+ operator)
-          - Grounded in executable logic, not comments
-
-      4 = Good reasoning:
-          - Identifies key patterns (parameterized vs concatenated queries)
-          - Mentions user input flow
-          - Mostly grounded in code, minor generic statements
-
-      3 = Adequate reasoning:
-          - Correctly identifies whether safe or vulnerable
-          - Some reference to patterns, but lacks specificity
-          - May include generic security principles alongside code analysis
-
-      2 = Weak reasoning:
-          - Generic statements about SQL injection
-          - Minimal code-specific evidence
-          - May rely on comments or non-executable text
-
-      1 = Poor reasoning:
-          - No code-specific evidence
-          - Generic security advice
-          - Based on comments rather than executable logic
-
-      Return ONLY a number from 1 to 5 and a brief explanation (1-2 sentences).
-
-# Thresholds for regression detection
+# Thresholds for pass/fail
 thresholds:
   verdict_format:
-    min_pass_rate: 0.95
+    min_pass_rate: 1.0
   verdict_correct:
     min_pass_rate: 0.7
   reasoning_quality:
